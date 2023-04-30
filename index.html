@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>自然科学部あしあと🐾QR</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="自然科学部, 昇龍祭, QR入退場システム">
+    <meta name="description" content="自然科学部PC班の昇龍祭にてエリアごとの混雑状況が確認できるQR入退場システム">
+    <link rel="stylesheet" href="index.css">
+    <link rel="icon" type="image/png" href="icon.png">
+    <script src="https://rawgit.com/cozmo/jsQR/master/dist/jsQR.js"></script>
+    <script src="https://rawgit.com/zxing-js/library/master/zxing.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.18.3/esm/index.min.js"></script>
+  <script>
+    const video = document.getElementById("qr-video");
+    const canvas = document.getElementById("qr-canvas");
+    const canvasContext = canvas.getContext("2d");
+    const codeReader = new ZXing.BrowserQRCodeReader();
+
+    function captureVideoFrame() {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvasContext.drawImage(video, 0, 0, canvas.width, canvas.height);
+    }
+
+    function drawLine(begin, end, color) {
+      canvasContext.beginPath();
+      canvasContext.moveTo(begin.x, begin.y);
+      canvasContext.lineTo(end.x, end.y);
+      canvasContext.lineWidth = 4;
+      canvasContext.strokeStyle = color;
+      canvasContext.stroke();
+    }
+
+    async function decode() {
+      captureVideoFrame();
+      const imageData = canvasContext.getImageData(0, 0, canvas.width, canvas.height);
+      const code = await codeReader.decodeFromImage(imageData.data, imageData.width, imageData.height);
+      if (code) {
+        drawLine(code.location.topLeftCorner, code.location.topRightCorner, "#FF3B58");
+        drawLine(code.location.topRightCorner, code.location.bottomRightCorner, "#FF3B58");
+        drawLine(code.location.bottomRightCorner, code.location.bottomLeftCorner, "#FF3B58");
+        drawLine(code.location.bottomLeftCorner, code.location.topLeftCorner, "#FF3B58");
+        console.log(code.text);
+      }
+      requestAnimationFrame(decode);
+    }
+
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+      .then((stream) => {
+        video.srcObject = stream;
+        video.play();
+        requestAnimationFrame(decode);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  </script>
+</head>
+
+<body>
+    <video id="qr-video"></video>
+    <canvas id="qr-canvas" style="display:none;"></canvas>
+</body>
+
+</html>
