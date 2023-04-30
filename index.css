@@ -1,0 +1,12 @@
+body{
+    text-align: center;
+    background-color: aqua;
+}
+textarea {
+    font-size: 20px;
+    width: 60%;
+    height: 180px;
+}
+.AreaName{
+    margin-top: 1000px;
+}
